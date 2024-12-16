@@ -1,9 +1,11 @@
 import pygame
-from config import *
+from config import ROWS, COLS, SQUARE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, light_brown, dark_brown, TRAP_COLOR, TRAP_POSITIONS
 import game_controller 
 
+# Obtener configuraciones
+
 # Dibujar el tablero
-def draw_board(screen):
+def draw_board(screen, board):
     for row in range(ROWS):
         for col in range(COLS):
             # Alternar colores según la posición
@@ -20,9 +22,11 @@ def draw_board(screen):
             if (row, col) in TRAP_POSITIONS:
                 trap_rect = pygame.Rect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
                 pygame.draw.rect(screen, TRAP_COLOR, trap_rect)
+    
+    return board
 
 # Dibujar las piezas
-def draw_pieces(screen):
+def draw_pieces(screen, pieces):
     """
     Dibuja las piezas en la pantalla
     """
@@ -33,19 +37,21 @@ def draw_pieces(screen):
         x = col * SQUARE_SIZE + (SQUARE_SIZE - 80) // 2
         y = row * SQUARE_SIZE + (SQUARE_SIZE - 80) // 2
         screen.blit(image, (x, y))
+    
+    return pieces
 
 #Dibuja los movimientos validos
-def draw_valid_moves_board(screen, selected_piece, piece_attacked, current_player, moves, max_moves):
+def draw_valid_moves_board(screen, selected_piece, piece_attacked, current_player, moves, max_moves, pieces):
 
     if piece_attacked:
-        draw_push_pull_posibility(screen, selected_piece, piece_attacked)
+        draw_push_pull_posibility(screen, selected_piece, piece_attacked, pieces)
 
     elif selected_piece:
         draw_selected_piece(screen, selected_piece)
 
-        draw_valid_moves(screen, selected_piece)
+        draw_valid_moves(screen, selected_piece, pieces)
 
-        draw_valid_push_pull_pieces(screen, selected_piece, moves)
+        draw_valid_push_pull_pieces(screen, selected_piece, moves, pieces)
         
 # Seleccionar una pieza según su posición
 def draw_selected_piece(screen, piece):
@@ -69,33 +75,33 @@ def draw_selected_piece(screen, piece):
         )
         
 # Dibujar movimientos válidos
-def draw_valid_moves(screen, selected_piece):
+def draw_valid_moves(screen, selected_piece, pieces):
     """
     Dibuja los movimientos válidos en la pantalla.
     """
     # Obtener movimientos válidos
-    valid_moves = game_controller.get_valid_moves(selected_piece)
+    valid_moves = game_controller.get_valid_moves(selected_piece, pieces)
 
     # Dibujar un rectángulo verde alrededor de las casillas válidas
     for move in valid_moves:
         pygame.draw.rect(screen, (224, 163, 255), (move[1] * SQUARE_SIZE, move[0] * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), width=4)
 
 # Dibujar movimientos válidos de empujar o tirar
-def draw_valid_push_pull_pieces(screen, selected_piece, moves):
+def draw_valid_push_pull_pieces(screen, selected_piece, moves, pieces):
     """
     Dibuja los movimientos válidos de empujar o tirar en la pantalla.
     """
     if selected_piece:
-        valid_push_pulls = game_controller.get_valid_push_pull_pieces(selected_piece, moves)
+        valid_push_pulls = game_controller.get_valid_push_pull_pieces(selected_piece, moves, pieces)
         for push_pull in valid_push_pulls:
             pygame.draw.rect(screen, (166, 227, 245), (push_pull[1] * SQUARE_SIZE, push_pull[0] * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), width=4)
 
-def draw_push_pull_posibility(screen, selected_piece, enemy_piece):
+def draw_push_pull_posibility(screen, selected_piece, enemy_piece, pieces):
     """
     Dibuja el movimiento de empujar o tirar en la pantalla.
     """
 
-    valid_push_pull = game_controller.get_valid_push_pull(selected_piece, enemy_piece)
+    valid_push_pull = game_controller.get_valid_push_pull(selected_piece, enemy_piece, pieces)
     if valid_push_pull:
         # Dibujar las casillas involucradas en el movimiento
         for p in valid_push_pull:

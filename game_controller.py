@@ -1,21 +1,20 @@
 from config import *
-import draw
 import copy
 
 # Manejar el clic del jugador
-def handle_click(screen, mouse_pos, selected_piece, piece_attacked, current_player, moves, max_moves, winner, old_pieces):
+def handle_click(screen, mouse_pos, selected_piece, piece_attacked, current_player, moves, max_moves, winner, old_pieces, pieces):
     """
     Maneja el clic del jugador.
     """
     # Si ya hay un ganador, no hacer nada
     if winner:
-        return selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves , winner, pieces
+        return selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves , winner, old_pieces, pieces
     
     # Si ya se alcanzó el máximo de movimientos por turno, no hacer nada
     if moves >= max_moves:
         current_player, moves = end_turn(current_player, moves, max_moves)
-        
-        return selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner, pieces
+
+        return selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner, old_pieces, pieces
     
     square = get_square_from_pos(mouse_pos)
 
@@ -23,7 +22,7 @@ def handle_click(screen, mouse_pos, selected_piece, piece_attacked, current_play
     if not selected_piece:
         
         
-        new_selected_piece = get_piece_from_square(square)
+        new_selected_piece = get_piece_from_square(square, pieces)
         # Seleccionar una pieza válida del jugador actual
         if new_selected_piece and new_selected_piece['color'] == current_player:
             selected_piece = new_selected_piece
@@ -35,7 +34,7 @@ def handle_click(screen, mouse_pos, selected_piece, piece_attacked, current_play
     elif selected_piece:
         
         if not piece_attacked:
-            new_piece_attacked = get_piece_from_square(square)
+            new_piece_attacked = get_piece_from_square(square, pieces)
 
             # Si ya hay una pieza seleccionada y se hace clic sobre una aliada o la misma pieza
             if new_piece_attacked and new_piece_attacked['color'] == current_player:
@@ -47,33 +46,33 @@ def handle_click(screen, mouse_pos, selected_piece, piece_attacked, current_play
                 piece_attacked = new_piece_attacked
 
             # Si se hace clic en una casilla vacía para mover la pieza seleccionada
-            elif is_valid_move(selected_piece, square):
-                old_pieces = copy.deepcopy(get_pieces())
-                move_piece(selected_piece, square)
-                eliminated_piece()
+            elif is_valid_move(selected_piece, square, pieces):
+                old_pieces = copy.deepcopy(pieces)
+                pieces = move_piece(selected_piece, square, pieces)
+                pieces = eliminated_piece(pieces)
                 moves += 1
                 selected_piece = None
             
         elif piece_attacked:
 
             # Si hace clic sobre una aliada o la misma pieza
-            option = get_piece_from_square(square)
+            option = get_piece_from_square(square, pieces)
             if option and option['color'] == current_player:
                 selected_piece = option
                 piece_attacked = None
 
             # Si se hace clic en una casilla vacía para empujar o tirar la pieza enemiga
-            elif is_valid_push_pull(selected_piece, piece_attacked, square):
-                old_pieces = copy.deepcopy(get_pieces())
-                move_piece_push_pull(selected_piece, piece_attacked, square)
-                eliminated_piece()
+            elif is_valid_push_pull(selected_piece, piece_attacked, square, pieces):
+                old_pieces = copy.deepcopy(pieces)
+                pieces = move_piece_push_pull(selected_piece, piece_attacked, square, pieces)
+                pieces = eliminated_piece(pieces)
                 moves += 2
                 selected_piece = None
                 piece_attacked = None
 
     current_player, moves = end_turn(current_player, moves, max_moves)
-    winner = win_condition(winner)
-    return selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner, old_pieces
+    winner = win_condition(winner, pieces)
+    return selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner, old_pieces, pieces
     
 # Seleccionar una coordenada de tablero según la posición del mouse
 def get_square_from_pos(pos):
@@ -88,7 +87,7 @@ def get_square_from_pos(pos):
     return square
 
 # Seleccionar una pieza según la posición
-def get_piece_from_square(square):
+def get_piece_from_square(square, pieces):
     """
     Encuentra si hay una pieza en la posición dada.
     """
@@ -98,7 +97,7 @@ def get_piece_from_square(square):
     return None
 
 # Seleccionar movimientos válidos
-def get_valid_moves(piece):
+def get_valid_moves(piece, pieces):
     """
     Retorna los movimientos válidos de una pieza
     """
@@ -107,12 +106,12 @@ def get_valid_moves(piece):
     for row in range(ROWS):
         for col in range(COLS):
             target_pos = (row, col)
-            if is_valid_move(piece, target_pos):
+            if is_valid_move(piece, target_pos, pieces):
                 valid_moves.append(target_pos)
     return valid_moves  
 
 # Seleccionar si un movimiento es válido
-def is_valid_move(piece, target_pos):
+def is_valid_move(piece, target_pos, pieces):
     """
     Verifica si el movimiento es válido.
     Considera las reglas de movimiento de Arimaa y el límite de movimientos.
@@ -184,7 +183,7 @@ def is_valid_move(piece, target_pos):
     # Se puede mover a una casilla donde este una pieza de otro color con valor menor y esta tenga donde moverse los conejos pueden retroceder
     for p in pieces:
         if p['position'] == target_pos and p['color'] != piece['color'] and p['value'] < piece['value']:
-            if get_valid_moves(p):
+            if get_valid_moves(p, pieces):
                 return True
             else:
                 return False
@@ -192,7 +191,7 @@ def is_valid_move(piece, target_pos):
     return True
 
 # Mover una pieza           
-def move_piece(piece, pos):
+def move_piece(piece, pos, pieces):
     """
     Mueve la pieza a la nueva posición.
     """
@@ -204,8 +203,10 @@ def move_piece(piece, pos):
     pieces.remove(piece)
     pieces.append(piece)
 
+    return pieces
+
 # Seleccionar piezas válidas para empujar o tirar
-def get_valid_push_pull_pieces(selected_piece, moves):
+def get_valid_push_pull_pieces(selected_piece, moves, pieces):
     """
     Retorna las casillas donde hay piezas que se pueden empujar o tirar.
     """
@@ -213,19 +214,19 @@ def get_valid_push_pull_pieces(selected_piece, moves):
     for row in range(ROWS):
         for col in range(COLS):
             target_pos = (row, col)
-            if is_valid_push_pull_pieces(selected_piece, target_pos, moves):
+            if is_valid_push_pull_pieces(selected_piece, target_pos, moves, pieces):
                 valid_push_pull.append(target_pos)
     return valid_push_pull
 
 # Seleccionar si una pieza es válida para empujar o tirar
-def is_valid_push_pull_pieces(selected_piece, target_pos, moves):
+def is_valid_push_pull_pieces(selected_piece, target_pos, moves, pieces):
     """
     Verifica si existe una pieza que se puede empujar o tirar.
     """
     
     current_row, current_col = selected_piece['position']
 
-    enemy_piece= get_piece_from_square(target_pos)
+    enemy_piece= get_piece_from_square(target_pos, pieces)
     
     # Si no hay pieza en la posición no se puede empujar o tirar
     if enemy_piece:
@@ -263,7 +264,7 @@ def is_valid_push_pull_pieces(selected_piece, target_pos, moves):
                 return False
           
         # No se puede empujar o tirar si no tengo espacio para moverme o si la pieza enemiga no tiene espacio para moverse
-        adjacent_positions = get_valid_push_pull(selected_piece, enemy_piece)
+        adjacent_positions = get_valid_push_pull(selected_piece, enemy_piece, pieces)
         if not adjacent_positions:
             return False
         
@@ -272,7 +273,7 @@ def is_valid_push_pull_pieces(selected_piece, target_pos, moves):
         return False
 
 # Seleccionar casillas válidas para empujar o tirar
-def get_valid_push_pull(selected_piece, enemy_piece):
+def get_valid_push_pull(selected_piece, enemy_piece, pieces):
     """
     Retorna las casillas donde se puede empujar o tirar una pieza.
     """
@@ -281,12 +282,12 @@ def get_valid_push_pull(selected_piece, enemy_piece):
     for row in range(ROWS):
         for col in range(COLS):
             target_pos = (row, col)
-            if is_valid_push_pull(selected_piece, enemy_piece, target_pos):
+            if is_valid_push_pull(selected_piece, enemy_piece, target_pos, pieces):
                 valid_push_pull.append(target_pos)
     return valid_push_pull
 
 # Seleccionar si un empuje o tirón es válido
-def is_valid_push_pull(selected_piece,enemy_piece, target_pos):
+def is_valid_push_pull(selected_piece,enemy_piece, target_pos, pieces):
     """
     Verifica si se puede empujar o tirar una pieza.
     """
@@ -319,11 +320,11 @@ def is_valid_push_pull(selected_piece,enemy_piece, target_pos):
     return True
 
 # Mover una pieza empujando o tirando
-def move_piece_push_pull(selected_piece, enemy_piece, pos):
+def move_piece_push_pull(selected_piece, enemy_piece, pos, pieces):
     """
     Mueve la pieza a la nueva posición.
     """
-    if is_valid_push_pull(selected_piece, enemy_piece, pos):
+    if is_valid_push_pull(selected_piece, enemy_piece, pos, pieces):
         #si la nueva posición arriba, abajo, derecha o izquierda de la pieza enemiga
         if abs(enemy_piece['position'][0] - pos[0]) == 1 and abs(enemy_piece['position'][1] - pos[1]) == 0 or abs(enemy_piece['position'][0] - pos[0]) == 0 and abs(enemy_piece['position'][1] - pos[1]) == 1:
         
@@ -343,7 +344,7 @@ def move_piece_push_pull(selected_piece, enemy_piece, pos):
                 selected_piece['position'] = pos
     else:
         print("No puedes mover la pieza enemiga a esa casilla.")
-        return None
+        return pieces
 
     # Actualizar la lista de piezas
     pieces.remove(enemy_piece)
@@ -356,7 +357,7 @@ def move_piece_push_pull(selected_piece, enemy_piece, pos):
     return pieces
 
 # Verificar si una pieza ha sido eliminada
-def eliminated_piece():
+def eliminated_piece(pieces):
     """
     Verifica si una pieza ha sido eliminada.
     """
@@ -373,9 +374,10 @@ def eliminated_piece():
             same_color_pieces = [p for p in pieces if p['position'] in adjacent_positions and p['color'] == piece['color']]
             if not same_color_pieces:
                 pieces.remove(piece)
+    return pieces
 
 # Cambiar de turno
-def change_turn(current_player, moves, old_pieces):
+def change_turn(current_player, moves, old_pieces, pieces):
     """
     Cambia el turno de los jugadores.
     """
@@ -414,15 +416,8 @@ def end_turn(current_player, moves, max_moves):
 
     return current_player, moves
 
-# Obtneer las piezas actuales
-def get_pieces():
-    """
-    Retorna las piezas iniciales.
-    """
-    return pieces
-
 # Obtener el ganador
-def win_condition(winner):
+def win_condition(winner, pieces):
     """
     Verifica si hay un ganador.
     """
@@ -448,9 +443,9 @@ def win_condition(winner):
     valid_moves_silver = []
     for piece in pieces:
         if piece['color'] == 'gold':
-            valid_moves_gold += get_valid_moves(piece)
+            valid_moves_gold += get_valid_moves(piece, pieces)
         if piece['color'] == 'silver':
-            valid_moves_silver += get_valid_moves(piece)
+            valid_moves_silver += get_valid_moves(piece, pieces)
 
     if not valid_moves_gold:
         winner = 'silver'

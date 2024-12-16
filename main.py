@@ -10,12 +10,14 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Arimaa")
 
-def draw_tool(screen, selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner):
-    draw.draw_board(screen)
-    draw.draw_pieces(screen)
-    draw.draw_valid_moves_board(screen, selected_piece, piece_attacked, current_player, moves, max_moves)
+
+def draw_tool(screen, selected_piece, piece_attacked, current_player, moves, max_moves, winner, pieces, board):
+    draw.draw_board(screen, board)
+    draw.draw_pieces(screen, pieces)
+    draw.draw_valid_moves_board(screen, selected_piece, piece_attacked, current_player, moves, max_moves, pieces)
     draw.draw_winner(screen, winner)
-    return board
+    
+    
 
 
 def main():
@@ -33,30 +35,32 @@ def main():
     max_moves = 4  # Número máximo de movimientos
     mouse_pos = None # Posición del mouse
     old_pieces = game_controller.get_pieces() # Piezas iniciales
+    pieces = get_pieces()
+    board = get_board()
+    
 
     while run:
         
         clock.tick(60)
 
-        
+        if current_player:
+            
+            for event in pygame.event.get():
+            
+                if event.type == pygame.QUIT:
+                    run = False
+                # Evento de teclado espacio para pasar turno
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        current_player, moves = game_controller.change_turn(current_player, moves, old_pieces, pieces)
 
-        for event in pygame.event.get():
-
-            if event.type == pygame.QUIT:
-                run = False
-            # Evento de teclado espacio para pasar turno
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    current_player, moves = game_controller.change_turn(current_player, moves, old_pieces)
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    mouse_pos = pygame.mouse.get_pos()
-                    selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner, old_pieces= game_controller.handle_click(screen, mouse_pos, selected_piece, piece_attacked, current_player, moves, max_moves, winner, old_pieces)
-
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_pos = pygame.mouse.get_pos()
+                        selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner, old_pieces, pieces= game_controller.handle_click(screen, mouse_pos, selected_piece, piece_attacked, current_player, moves, max_moves, winner, old_pieces, pieces)
 
         # Herramienta de dibujo
-        board = draw_tool(screen, selected_piece, piece_attacked, mouse_pos, current_player, moves, max_moves, winner)
+        draw_tool(screen, selected_piece, piece_attacked, current_player, moves, max_moves, winner, pieces, board)
         pygame.display.update()
 
     pygame.quit()

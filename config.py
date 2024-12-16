@@ -19,8 +19,8 @@ TRAP_POSITIONS = [
     (5, 2), (5, 5)
 ]
 
-global pieces
-pieces = [
+def get_pieces():
+    pieces = [
         # Piezas doradas
         {"type": "rabbit", "color": "gold", "position": (7, 0), "image_path": "assets/golden_Rabit.png", "value": 1},
         {"type": "rabbit", "color": "gold", "position": (7, 1), "image_path": "assets/golden_Rabit.png", "value": 1},
@@ -57,6 +57,8 @@ pieces = [
         {"type": "dog", "color": "silver", "position": (1, 6), "image_path": "assets/silver_Dog.png", "value": 5},
         {"type": "cat", "color": "silver", "position": (1, 7), "image_path": "assets/silver_Cat.png", "value": 3},
     ]
+    return pieces
 
-global board
-board = [[None for _ in range(COLS)] for _ in range(ROWS)]
+def get_board():
+    board = [[None for _ in range(COLS)] for _ in range(ROWS)]
+    return board
