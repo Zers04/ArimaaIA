@@ -8,8 +8,8 @@ SCREEN_WIDTH = COLS * SQUARE_SIZE
 SCREEN_HEIGHT = ROWS * SQUARE_SIZE
 
 # Colores
-light_brown = (56,41,66)
-dark_brown = (35,34,43)
+light_purple = (56,41,66)
+dark_purple = (35,34,43)
 TRAP_COLOR = (0, 0, 0)  # Negro para las casillas trampa
 BACKGROUND_COLOR = (255, 255, 255)  # Blanco
 

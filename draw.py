@@ -1,5 +1,5 @@
 import pygame
-from config import ROWS, COLS, SQUARE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, light_brown, dark_brown, TRAP_COLOR, TRAP_POSITIONS
+from config import ROWS, COLS, SQUARE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, light_purple, dark_purple, TRAP_COLOR, TRAP_POSITIONS
 import game_controller 
 
 # Obtener configuraciones
@@ -9,7 +9,7 @@ def draw_board(screen, board):
     for row in range(ROWS):
         for col in range(COLS):
             # Alternar colores según la posición
-            color = light_brown if (row + col) % 2 == 0 else dark_brown
+            color = light_purple if (row + col) % 2 == 0 else dark_purple
             rect = pygame.Rect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
             
             # Dibujar casilla
@@ -96,6 +96,7 @@ def draw_valid_push_pull_pieces(screen, selected_piece, moves, pieces):
         for push_pull in valid_push_pulls:
             pygame.draw.rect(screen, (166, 227, 245), (push_pull[1] * SQUARE_SIZE, push_pull[0] * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), width=4)
 
+# Dibujar la posibilidad de empujar o tirar
 def draw_push_pull_posibility(screen, selected_piece, enemy_piece, pieces):
     """
     Dibuja el movimiento de empujar o tirar en la pantalla.
@@ -107,6 +108,7 @@ def draw_push_pull_posibility(screen, selected_piece, enemy_piece, pieces):
         for p in valid_push_pull:
             pygame.draw.rect(screen, (255,255,255), (p[1] * SQUARE_SIZE, p[0] * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), width=4)
 
+# Dibujar el mensaje de ganador
 def draw_winner(screen, winner):
     """
     Dibuja el mensaje de ganador en la pantalla.
@@ -120,4 +122,45 @@ def draw_winner(screen, winner):
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         screen.blit(text, text_rect)
 
-            
+# Dibujar el menú
+def draw_menu(screen):
+    """
+    Dibuja el menú en la pantalla.
+    
+    :param screen: La superficie principal donde se dibuja.
+    :param screen_width: Ancho de la pantalla.
+    :param screen_height: Alto de la pantalla.
+    """
+    # Cargar y escalar la imagen de fondo
+    background = pygame.image.load("assets/Menu.png")
+    background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen.blit(background, (0, 0))
+
+    # Configuración de fuente y colores
+    font = pygame.font.Font(None, 36)
+    text_color = (255, 255, 255)  # Blanco
+    button_color = (255, 215, 0, 180)  # Dorado semi-transparente
+
+    # Crear una superficie con canal alpha para transparencia
+    button_surface = pygame.Surface((250, 75), pygame.SRCALPHA)
+
+    # Lista de textos para los botones
+    button_texts = ["Player vs Player", "Player vs Machine", "Machine vs Machine"]
+
+    # Dibujar los botones con texto
+    for i, text in enumerate(button_texts):
+        # Crear la superficie del botón
+        button_surface.fill((0, 0, 0, 0))  # Limpiar la superficie
+        pygame.draw.rect(button_surface, button_color, (0, 0, 250, 75), border_radius=15)
+
+        # Calcular posición del botón
+        button_x = SCREEN_WIDTH // 2 - 125
+        button_y = SCREEN_HEIGHT // 2 - 50 + i * 100
+
+        # Blit del botón
+        screen.blit(button_surface, (button_x, button_y))
+
+        # Renderizar el texto
+        text_surface = font.render(text, True, text_color)
+        text_rect = text_surface.get_rect(center=(button_x + 125, button_y + 37))  # Centrar texto en el botón
+        screen.blit(text_surface, text_rect)

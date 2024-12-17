@@ -1,4 +1,4 @@
-from config import *
+from config import ROWS, COLS, SQUARE_SIZE, TRAP_POSITIONS, SCREEN_WIDTH, SCREEN_HEIGHT, light_purple, dark_purple, TRAP_COLOR, BACKGROUND_COLOR, get_pieces, get_board
 import copy
 
 # Manejar el clic del jugador
@@ -193,17 +193,27 @@ def is_valid_move(piece, target_pos, pieces):
 # Mover una pieza           
 def move_piece(piece, pos, pieces):
     """
-    Mueve la pieza a la nueva posición.
-    """
+    Mueve la pieza a la nueva posición sin modificar la lista original.
     
-    #reemplazar la posición de la pieza
-    piece['position'] = pos
-
-    # Actualizar la lista de piezas
-    pieces.remove(piece)
-    pieces.append(piece)
-
-    return pieces
+    :param piece: La pieza a mover
+    :param pos: Nueva posición
+    :param pieces: Lista de piezas
+    :return: Nueva lista de piezas con la pieza movida
+    """
+    # Crear una nueva lista de piezas
+    new_pieces = pieces.copy()
+    
+    # Encontrar el índice de la pieza original
+    piece_index = new_pieces.index(piece)
+    
+    # Crear una copia de la pieza y actualizar su posición
+    moved_piece = piece.copy()
+    moved_piece['position'] = pos
+    
+    # Reemplazar la pieza en la nueva lista
+    new_pieces[piece_index] = moved_piece
+    
+    return new_pieces
 
 # Seleccionar piezas válidas para empujar o tirar
 def get_valid_push_pull_pieces(selected_piece, moves, pieces):
@@ -322,39 +332,54 @@ def is_valid_push_pull(selected_piece,enemy_piece, target_pos, pieces):
 # Mover una pieza empujando o tirando
 def move_piece_push_pull(selected_piece, enemy_piece, pos, pieces):
     """
-    Mueve la pieza a la nueva posición.
-    """
-    if is_valid_push_pull(selected_piece, enemy_piece, pos, pieces):
-        #si la nueva posición arriba, abajo, derecha o izquierda de la pieza enemiga
-        if abs(enemy_piece['position'][0] - pos[0]) == 1 and abs(enemy_piece['position'][1] - pos[1]) == 0 or abs(enemy_piece['position'][0] - pos[0]) == 0 and abs(enemy_piece['position'][1] - pos[1]) == 1:
-        
-            #reemplazar la posición de la aliada
-            selected_piece['position'] = enemy_piece['position']
-
-            #reemplazar la posición de la pieza enemiga
-            enemy_piece['position'] = pos
-            
-        #si la nueva posición arriba, abajo, derecha o izquierda de la pieza aliada
-        elif abs(selected_piece['position'][0] - pos[0]) == 1 and abs(selected_piece['position'][1] - pos[1]) == 0 or abs(selected_piece['position'][0] - pos[0]) == 0 and abs(selected_piece['position'][1] - pos[1]) == 1:
+    Mueve la pieza a la nueva posición sin modificar la lista original.
     
-                #reemplazar la posición de la pieza enemiga
-                enemy_piece['position'] = selected_piece['position']
+    :param selected_piece: La pieza seleccionada para mover
+    :param enemy_piece: La pieza enemiga involucrada en push/pull
+    :param pos: Nueva posición
+    :param pieces: Lista de piezas original
+    :return: Nueva lista de piezas con las piezas movidas
+    """
+    # Crear una copia de la lista de piezas
+    new_pieces = pieces.copy()
+    
+    # Encontrar los índices de las piezas originales
+    selected_piece_index = new_pieces.index(selected_piece)
+    enemy_piece_index = new_pieces.index(enemy_piece)
+    
+    # Crear copias de las piezas
+    new_selected_piece = selected_piece.copy()
+    new_enemy_piece = enemy_piece.copy()
+    
+    if is_valid_push_pull(selected_piece, enemy_piece, pos, pieces):
+        # Si la nueva posición está arriba, abajo, derecha o izquierda de la pieza enemiga
+        if (abs(enemy_piece['position'][0] - pos[0]) == 1 and abs(enemy_piece['position'][1] - pos[1]) == 0) or \
+           (abs(enemy_piece['position'][0] - pos[0]) == 0 and abs(enemy_piece['position'][1] - pos[1]) == 1):
+        
+            # Reemplazar la posición de la aliada
+            new_selected_piece['position'] = new_enemy_piece['position']
 
-                #reemplazar la posición de la aliada
-                selected_piece['position'] = pos
+            # Reemplazar la posición de la pieza enemiga
+            new_enemy_piece['position'] = pos
+            
+        # Si la nueva posición está arriba, abajo, derecha o izquierda de la pieza aliada
+        elif (abs(selected_piece['position'][0] - pos[0]) == 1 and abs(selected_piece['position'][1] - pos[1]) == 0) or \
+             (abs(selected_piece['position'][0] - pos[0]) == 0 and abs(selected_piece['position'][1] - pos[1]) == 1):
+    
+            # Reemplazar la posición de la pieza enemiga
+            new_enemy_piece['position'] = new_selected_piece['position']
+
+            # Reemplazar la posición de la aliada
+            new_selected_piece['position'] = pos
+        
+        # Actualizar las piezas en la nueva lista
+        new_pieces[selected_piece_index] = new_selected_piece
+        new_pieces[enemy_piece_index] = new_enemy_piece
+        
+        return new_pieces
     else:
         print("No puedes mover la pieza enemiga a esa casilla.")
         return pieces
-
-    # Actualizar la lista de piezas
-    pieces.remove(enemy_piece)
-    pieces.append(enemy_piece)
-
-    # Actualizar la lista de piezas
-    pieces.remove(selected_piece)
-    pieces.append(selected_piece)
-    
-    return pieces
 
 # Verificar si una pieza ha sido eliminada
 def eliminated_piece(pieces):
@@ -401,6 +426,7 @@ def change_turn(current_player, moves, old_pieces, pieces):
 
     return current_player, moves
 
+# Terminar el turno
 def end_turn(current_player, moves, max_moves):
     """
     Termina el turno del jugador actual.
