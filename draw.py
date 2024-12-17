@@ -116,9 +116,9 @@ def draw_winner(screen, winner):
     if winner:
         font = pygame.font.Font(None, 50)
         if winner == 'gold':  
-            text = font.render(f"El ganador es el humano :)", True, (255, 255, 255))
+            text = font.render(f"El ganador es el jugador 1", True, (255, 255, 255))
         if winner == 'silver':
-            text = font.render(f"El ganador es la maquina :(", True, (255, 255, 255))
+            text = font.render(f"El ganador es el jugador 2", True, (255, 255, 255))
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         screen.blit(text, text_rect)
 
