@@ -80,7 +80,7 @@ cd ArimaaIA
 pip install -r requirements.txt
 ```
 
-## ⚙️ Execution
+## ⚙️ Run
 
 To start the game, run:
 
