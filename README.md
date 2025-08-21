@@ -12,7 +12,7 @@ This project was carried out as a final project for the Artificial Intelligence 
 
 ---
 
-## 📖 Description
+## 📖 Project Description
 
 Arimaa is a strategy game designed to be difficult for computers to solve.  
 This project implements:
@@ -30,7 +30,7 @@ The system evaluates board positions and selects moves using a heuristic that co
 
 ---
 
-## 🎯 Objectives
+## 🎯 Features
 
 - Implement an interactive environment to play Arimaa against another player or the AI.
 - Design an intuitive graphical board to easily visualize and move pieces.
@@ -50,7 +50,7 @@ The system evaluates board positions and selects moves using a heuristic that co
 
 ---
 
-## 📋 Requirements
+## 📋 Prerequisites
 
 - Python 3.10 or higher  
 - Pygame 2.0 or higher  
