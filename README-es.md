@@ -88,7 +88,7 @@ python main.py
 
 ---
 
-## Escenas del juego
+## 🎬 Escenas del juego
 
 * Menú de inicio
 
