@@ -90,7 +90,7 @@ python main.py
 
 ---
 
-## Game Scenes
+## 🎬 Game Scenes
 
 * Start Menu
 
